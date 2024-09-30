@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AYDA Ankara Yabancı Dil Akademisi - Yazılı Yetenek Ölçme</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: white;
+        }
+        header {
+            padding: 10px;
+            background-color: #1877F2; /* Facebook/Zoom mavisi */
+            color: white;
+            text-align: center;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .writing-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .left-side {
+            width: 45%;
+            padding: 20px;
+            text-align: center;
+            background-color: #f5f5f5;
+            border-radius: 10px;
+        }
+        .right-side {
+            width: 45%;
+            position: relative;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 10px;
+            font-size: 1em;
+            resize: none;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        #wordCount {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 0.9em;
+            color: red;
+        }
+        form {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        input[type="text"],
+        input[type="tel"],
+        input[type="email"] {
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 1em;
+            width: 300px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button[type="submit"],
+        .level-button,
+        .sub-button,
+        .back-button {
+            padding: 10px 20px;
+            background-color: #1877F2;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 5px;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #155ab6;
+        }
+        .warning {
+            color: red;
+            font-size: 0.9em;
+            display: none;
+        }
+        .hidden {
+            display: none;
+        }
+        .sub-button-container {
+            margin-top: 10px;
+            text-align: center;
+        }
+        /* Ekran Boyutlarına Göre Ayarlamalar */
+        @media (max-width: 768px) {
+            .writing-section {
+                flex-direction: column;
+                align-items: center;
+            }
+            .left-side,
+            .right-side {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>AYDA Ankara Yabancı Dil Akademisi</h1>
+        <p>Yazılı Yetenek Ölçme</p>
+    </header>
+
+    <!-- Bilgi Formu -->
+    <div class="container">
+        <form id="userForm">
+            <label for="name">Ad Soyad:</label><br>
+            <input type="text" id="name" name="name" required><br><br>
+            <label for="phone">Telefon:</label><br>
+            <input type="tel" id="phone" name="phone" required><br><br>
+            <label for="email">E-posta:</label><br>
+            <input type="email" id="email" name="email" required><br><br>
+
+            <button type="submit">Teste Başla</button>
+        </form>
+
+        <!-- Seviye Butonları -->
+        <div id="levelButtons" class="hidden">
+            <button class="level-button" id="a1Button">A1</button>
+            <button class="level-button" id="a2Button">A2</button>
+            <button class="level-button" id="b1Button">B1</button>
+            <button class="level-button" id="b2Button">B2</button>
+        </div>
+
+        <!-- B2 İçin Alt Butonlar -->
+        <div id="b2SubButtons" class="hidden sub-button-container">
+            <button class="sub-button" id="b2BeschwerdeButton">BESCHWERDE</button>
+            <button class="sub-button" id="b2InformationButton">INFORMATION</button>
+            <button class="back-button" id="backToLevelsFromB2">Geri Dön</button>
+        </div>
+
+        <!-- Yazma Alanı -->
+        <div id="writingContainer" class="writing-section hidden">
+            <div class="left-side">
+                <h3>Yazma Talimatları</h3>
+                <p id="writingInstructions">Talimatlar burada görünecek.</p>
+            </div>
+            <div class="right-side">
+                <textarea id="writingText" placeholder="Buraya yazmaya başlayın..."></textarea>
+                <div id="wordCount">0/300 kelime</div>
+                <p class="warning" id="wordLimitWarning">Kelime limiti aşıldı! Maksimum 300 kelime yazabilirsiniz.</p>
+            </div>
+        </div>
+
+        <!-- Geri Dön Butonu -->
+        <div id="backButtonContainer" class="hidden">
+            <button class="back-button" id="backToLevels">Geri Dön</button>
+        </div>
+    </div>
+
+    <script>
+        const userForm = document.getElementById('userForm');
+        const levelButtons = document.getElementById('levelButtons');
+        const b2SubButtons = document.getElementById('b2SubButtons');
+        const writingContainer = document.getElementById('writingContainer');
+        const writingText = document.getElementById('writingText');
+        const wordCount = document.getElementById('wordCount');
+        const wordLimitWarning = document.getElementById('wordLimitWarning');
+        const writingInstructions = document.getElementById('writingInstructions');
+        const backButtonContainer = document.getElementById('backButtonContainer');
+
+        // Form gönderildiğinde seviye butonlarını göster
+        userForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            userForm.classList.add('hidden'); // Formu gizle
+            levelButtons.classList.remove('hidden'); // Seviye butonlarını göster
+        });
+
+        // Kelime sayısını hesapla
+        writingText.addEventListener('input', function() {
+            const text = writingText.value.trim();
+            const words = text.split(/\s+/).filter(word => word.length > 0);
+            const wordCountValue = words.length;
+
+            // Kelime sayısını güncelle
+            wordCount.textContent = `${wordCountValue}/300 kelime`;
+
+            // 300 kelime sınırını kontrol et
+            if (wordCountValue > 300) {
+                wordLimitWarning.style.display = 'block';
+            } else {
+                wordLimitWarning.style.display = 'none';
+            }
+        });
+
+        // A1 butonuna tıklandığında talimatları göster
+        document.getElementById('a1Button').addEventListener('click', function() {
+            writingInstructions.innerHTML = `
+                Schreiben, Teil 2<br>
+                Schreiben Sie an die Touristeninformation in Dresden: <br>
+                • Sie kommen im August nach Dresden. <br>
+                • Bitten Sie um Informationen über Film, Theater, Museen usw. (Kulturprogramm).<br>
+                • Bitten Sie um Hoteladressen.<br>
+                Schreiben Sie zu jedem Punkt ein bis zwei Sätze (circa 30 Wörter) auf den Antwortbogen.<br>
+                Vergessen Sie nicht den passenden Anfang und Gruß am Schluss.
+            `;
+            showWritingSection();
+        });
+
+        // A2 butonuna tıklandığında talimatları göster
+        document.getElementById('a2Button').addEventListener('click', function() {
+            writingInstructions.innerHTML = `
+                Schreiben, Teil 2<br>
+                Ihre Bekannte Paola heiratet nächsten Monat Stefan. Die Hochzeit ist in Berlin.<br>
+                Paola hat Sie eingeladen. Antworten Sie mit einem Brief.<br>
+                Hier finden Sie vier Punkte "jemanden mitbringen- Geschenk- Stefan - Übernachtung in Berlin".<br>
+                Wählen Sie drei aus. Schreiben Sie zu jedem dieser drei Punkte ein bis zwei Sätze.<br>
+                Vergessen Sie nicht den passenden Anfang und den Gruß am Schluss.<br>
+                Schreiben Sie circa 40 Wörter.
+            `;
+            showWritingSection();
+        });
+
+        // B1 butonuna tıklandığında talimatları göster
+        document.getElementById('b1Button').addEventListener('click', function() {
+            writingInstructions.innerHTML = `
+                Schriftlicher Ausdruck<br>
+                Sie haben von einer Freundin folgende E-Mail erhalten:<br>
+Liebe/r ,
+danke für deine nette Einladung! Ich komme dich sehr gerne besuchen, um dein Land kennenzulernen - wie du weißt, war ich ja noch nie da. Wann wäre die beste Zeit, dich zu besuchen? 
+Ich weiß noch nicht einmal, ob es bei euch im Sommer sehr heiß wird – allzu große Hitze mag 
+ich nämlich nicht so sehr. Und gibt es sonst noch irgendwelche Dinge, die ich wissen sollte, 
+bevor ich diese Reise mache?
+Bitte schreib mir möglichst bald, damit ich mich gut auf die Reise vorbereiten kann.
+Herzliche Grüße
+Marianne
+
+
+                Überlegen Sie sich vor dem Schreiben eine passende Reihenfolge der Punkte, einen passenden Betreff, 
+                eine passende Anrede, Einleitung und einen passenden Schluss.<br>
+                Antworten Sie auf die E-Mail. Schreiben Sie etwas zu allen vier Punkten:<br>
+                • welche Ausflüge Sie mit Marianne machen wollen<br>
+                • was die beste Jahreszeit für die Reise ist<br>
+                • welche Kleidung sie mitnehmen soll<br>
+                • wie sie sich am besten auf die Reise vorbereiten kann
+            `;
+            showWritingSection();
+        });
+
+        // B2 butonuna tıklandığında alt butonları göster
+        document.getElementById('b2Button').addEventListener('click', function() {
+            levelButtons.classList.add('hidden');
+            b2SubButtons.classList.remove('hidden');
+        });
+
+        // B2 Beschwerde talimatları
+        document.getElementById('b2BeschwerdeButton').addEventListener('click', function() {
+            writingInstructions.innerHTML = `
+                B2 Beschwerde<br>
+                Jugendcamp Silberstrand Werbeanzeige<br>
+                Sie haben im Jugendcamp Silberstrand zwei Wochen Urlaub gemacht. Leider waren Sie überhaupt nicht zufrieden. Schreiben Sie eine Beschwerde an das Camp.<br>
+                Behandeln Sie darin entweder drei der folgenden Punkte:<br>
+                • Erwartungen nach der Lektüre der Werbeanzeige<br>
+                • Erlebnisse im Camp<br>
+                • Was Sie tun, falls Sie keine Antwort bekommen.<br>
+                Schreiben Sie mindestens 150 Wörter.
+            `;
+            showWritingSection();
+        });
+
+        // B2 Information talimatları
+        document.getElementById('b2InformationButton').addEventListener('click', function() {
+            writingInstructions.innerHTML = `
+                B2 Information<br>
+                Sie möchten eine Unfallversicherung abschließen und haben noch Fragen. Schreiben Sie an die Secura Versicherungen AG.<br>
+                Behandeln Sie drei der folgenden Punkte:<br>
+                • Legen Sie dar, welchen Sport Sie treiben.<br>
+                • Beschreiben Sie Ihre Pläne für zukünftige Reisen.<br>
+                • Erläutern Sie, welche Leistungen Sie sich wünschen.<br>
+                Schreiben Sie mindestens 150 Wörter.
+            `;
+            showWritingSection();
+        });
+
+        // Geri dön butonu ile seviye seçim ekranına geri dön
+        document.getElementById('backToLevels').addEventListener('click', function() {
+            writingContainer.classList.add('hidden'); // Yazma alanını gizle
+            backButtonContainer.classList.add('hidden'); // Geri dön butonunu gizle
+            levelButtons.classList.remove('hidden'); // Seviye butonlarını göster
+        });
+
+        // B2 alt butonlardan geri dön
+        document.getElementById('backToLevelsFromB2').addEventListener('click', function() {
+            b2SubButtons.classList.add('hidden');
+            levelButtons.classList.remove('hidden');
+        });
+
+        // Yazma bölümü görünür olduğunda geri dön butonunu göster
+        function showWritingSection() {
+            levelButtons.classList.add('hidden'); // Seviye butonlarını gizle
+            b2SubButtons.classList.add('hidden'); // B2 alt butonlarını gizle
+            writingContainer.classList.remove('hidden'); // Yazma bölümünü göster
+            backButtonContainer.classList.remove('hidden'); // Geri dön butonunu göster
+        }
+    </script>
+
+</body>
+</html>
